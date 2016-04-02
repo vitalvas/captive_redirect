@@ -12,8 +12,35 @@ import (
 	"time"
 )
 
+var (
+	uaList   []*regexp.Regexp
+	isScript *regexp.Regexp
+)
+
 type httpHandler struct {
 	Dst string
+}
+
+func init() {
+	var err error
+
+	list := []string{
+		"^(BTWebClient|uTorrent|Microsoft-CryptoAPI|Windows-Update-Agent|Microsoft BITS|Google Update)",
+		"^(MSDW)$",
+		"^$", // empty
+	}
+	for _, line := range list {
+		r, err := regexp.Compile(line)
+		if err != nil {
+			log.Panic(err)
+		}
+		uaList = append(uaList, r)
+	}
+
+	isScript, err = regexp.Compile(".(php|pl|py|cgi|fcgi|do|htm|html|phtml|xhtml)$")
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 func main() {
@@ -52,7 +79,7 @@ func discover() map[int]string {
 func runWeb(port int, dst string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	hostPort := fmt.Sprintf("127.0.0.1:%d", port)
+	hostPort := fmt.Sprintf("0.0.0.0:%d", port)
 	log.Print("ListenAndServe: ", hostPort, " -> ", dst)
 
 	srv := &http.Server{
@@ -79,8 +106,8 @@ func (this httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	redir := this.Dst
 
 	if len(os.Getenv("CAPTIVE_NOORIGIN")) == 0 {
-		if len(r.URL.String()) > 0 {
-			if !strings.HasSuffix(redir, "/") && scriptMatch(redir) == false {
+		if len(r.URL.String()) > 7 {
+			if !strings.HasSuffix(redir, "/") && !isScript.MatchString(redir) {
 				redir = fmt.Sprintf("%s/", redir)
 			}
 			redir = fmt.Sprintf("%s?url=%s", redir, r.URL.String())
@@ -90,23 +117,11 @@ func (this httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redir, http.StatusTemporaryRedirect)
 }
 
-func scriptMatch(path string) bool {
-	end := ".(php|pl|py|cgi|do|html|phtml)$"
-	match, _ := regexp.MatchString(end, path)
-	return match
-}
-
 func uaBlackList(ua string) bool {
-	list := []string{
-		"^BTWebClient",
-		"^uTorrent",
-	}
-
-	for _, name := range list {
-		if match, _ := regexp.MatchString(name, ua); match {
+	for _, name := range uaList {
+		if match := name.MatchString(ua); match {
 			return true
 		}
 	}
-
 	return false
 }
