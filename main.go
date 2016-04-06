@@ -25,8 +25,9 @@ func init() {
 	var err error
 
 	list := []string{
-		"^(BTWebClient|uTorrent|Microsoft-CryptoAPI|Windows-Update-Agent|Microsoft BITS|Google Update)",
+		"^(BTWebClient|uTorrent|Microsoft-CryptoAPI|Windows-Update-Agent|Microsoft BITS|Google Update|GoogleEarth|MRA|MediaGet|Syncer|Akamai)",
 		"^(MSDW)$",
+		"(DrWebUpdate|MailRuSputnik|Microsoft NCSI|Windows-Update-Agent)",
 		"^$", // empty
 	}
 	for _, line := range list {
