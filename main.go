@@ -111,7 +111,11 @@ func (this httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if !strings.HasSuffix(redir, "/") && !isScript.MatchString(redir) {
 				redir = fmt.Sprintf("%s/", redir)
 			}
-			redir = fmt.Sprintf("%s?url=%s", redir, r.URL.String())
+			scheme := r.URL.Scheme
+			if scheme == "" {
+				scheme = "http"
+			}
+			redir = fmt.Sprintf("%s?url=%s://%s%s", redir, scheme, r.Host, r.URL.String())
 		}
 	}
 
