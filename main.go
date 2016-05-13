@@ -26,8 +26,9 @@ func init() {
 
 	list := []string{
 		"^(BTWebClient|uTorrent|Microsoft-CryptoAPI|Windows-Update-Agent|Microsoft BITS|Google Update|GoogleEarth|MRA|MediaGet|Syncer|Akamai)",
+		"^(Skype|Avast|avast|Apache-HttpClient|SCSDK)",
 		"^(MSDW)$",
-		"(DrWebUpdate|MailRuSputnik|Microsoft NCSI|Windows-Update-Agent)",
+		"(DrWebUpdate|MailRuSputnik|Microsoft NCSI|Windows-Update-Agent|BenchHttp)",
 		"^$", // empty
 	}
 	for _, line := range list {
